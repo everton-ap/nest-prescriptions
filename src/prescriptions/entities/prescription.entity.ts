@@ -9,10 +9,13 @@ export class Prescription {
   date: string;
 
   @Column()
-  patienteCpf: string;
+  patient_cpf: string;
 
   @Column()
-  doctorUf: string;
+  doctor_crm: string;
+
+  @Column()
+  doctor_uf: string;
 
   @Column()
   medication: string;
