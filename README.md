@@ -1,98 +1,116 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Prescrições Médicas
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema para leitura e processamento de arquivos CSV contendo prescrições médicas.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descrição
 
-## Description
+Este projeto é uma API desenvolvida com NestJS para importar e gerenciar prescrições médicas através de arquivos CSV. O sistema realiza validação de dados, evita duplicações e persiste as informações em um banco de dados MySQL.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Pré-requisitos
 
-## Project setup
+Antes de começar, certifique-se de ter instalado em sua máquina:
+
+- **Node.js** (versão 18 ou superior)
+- **npm** (gerenciador de pacotes do Node.js)
+- **Docker** e **Docker Compose**
+- **NestJS**
+
+## Configuração do Ambiente
+
+### 1. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto utilizando as variáveis do `.env-example`
+
+### 2. Subir o banco de dados com Docker
+
+O projeto utiliza MySQL 8.0 como banco de dados. Para iniciar o container:
 
 ```bash
-$ npm install
+# Iniciar o container do MySQL
+docker compose up -d
+
+# Verificar se o container está rodando
+docker ps
 ```
 
-## Compile and run the project
+O banco de dados estará disponível em `localhost:3307` (porta configurável via `.env`).
+
+**Comandos úteis do Docker:**
 
 ```bash
-# development
-$ npm run start
+# Parar o container
+docker compose down
 
-# watch mode
-$ npm run start:dev
+# Ver logs do container
+docker compose logs -f mysql
 
-# production mode
-$ npm run start:prod
+# Reiniciar o container
+docker compose restart
 ```
 
-## Run tests
+## Instalação do Projeto
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+## Executar o Projeto
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Modo de desenvolvimento
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Desenvolvimento normal
+npm run start
+
+# Modo watch (reinicia automaticamente ao detectar mudanças)
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A API estará disponível em `http://localhost:3000` (porta padrão do NestJS).
 
-## Resources
+## Funcionalidades
 
-Check out a few resources that may come in handy when working with NestJS:
+- Upload e processamento de arquivos CSV com prescrições médicas
+- Validação de dados (CPF, formato de data, campos obrigatórios)
+- Validação de cabeçalhos do CSV
+- Prevenção de duplicação de prescrições
+- Consulta de prescrições por ID
+- Persistência de dados em MySQL
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Estrutura do CSV
 
-## Support
+O arquivo CSV deve conter os seguintes campos:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+id, date, patient_cpf, doctor_crm, doctor_uf, medication, controlled, dosage, frequency, duration, notes
 
-## Stay in touch
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Tecnologias Utilizadas
 
-## License
+- **NestJS** - Framework Node.js progressivo
+- **TypeORM** - ORM para TypeScript e JavaScript
+- **MySQL** - Banco de dados relacional
+- **Docker** - Containerização
+- **Zod** - Validação de schemas
+- **csv-parse** - Parser de arquivos CSV
+- **cpf-cnpj-validator** - Validação de CPF/CNPJ
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Troubleshooting
+
+### Erro de conexão com o banco de dados
+
+Verifique se:
+1. O container Docker está rodando: `docker ps`
+2. As variáveis de ambiente no `.env` estão corretas
+3. A porta configurada não está sendo usada por outro serviço
+
+### Problemas com Docker
+
+```bash
+# Remover containers e volumes
+docker compose down -v
+
+# Recriar containers
+docker compose up -d --force-recreate
+```

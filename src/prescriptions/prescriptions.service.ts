@@ -51,6 +51,8 @@ export class PrescriptionsService {
     let validRecords: number = 0;
     let processedRecords: number = 0;
 
+    // TODO para escabilidade
+    // só persistir no banco após intervalor de X registros
     for (let i = 0; i < csvRecords.length; i++) {
       processedRecords++;
 
