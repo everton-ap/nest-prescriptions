@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { cpf } from 'cpf-cnpj-validator';
-import { States } from 'src/enum/status.enum';
+import { States } from 'src/prescriptions/enum/status.enum';
 
 /**
  * Schema de validação para os registros de entrada do CSV de prescrições
