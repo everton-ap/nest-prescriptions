@@ -12,7 +12,7 @@ export class Prescription {
   patient_cpf: string;
 
   @Column()
-  doctor_crm: string;
+  doctor_crm: number;
 
   @Column()
   doctor_uf: string;

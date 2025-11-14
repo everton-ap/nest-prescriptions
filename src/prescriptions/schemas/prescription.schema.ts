@@ -15,7 +15,7 @@ export const PrescriptionSchema = z.object({
    * date: data válida e obrigatório
    * date: não pode ser futura
    */
-  date: z.string().refine(
+  date: z.string().min(1, 'Data é obrigatório').refine(
     (date) => {
       if (date.length === 10 && date.includes('-')) {
         return new Date(date);
@@ -58,15 +58,17 @@ export const PrescriptionSchema = z.object({
   /**
    * doctor_crm: apenas números e obrigatório e obrigatório
    */
-  doctor_crm: z.string('CRM precisa ser numérico').min(1, 'CRM é obrigatório'),
+  doctor_crm: z.coerce.number().positive('CRM precisa ser numérico').min(1, 'CRM é obrigatório'),
 
   /**
    * doctor_uf: UF válida (2 letras) e obrigatório
    */
-  doctor_uf: z.string().length(2, 'UF deve ter 2 caracteres').refine(
-    (uf) => Object.values(States).includes(uf as States),
-    'UF não existe'
-  ),
+  doctor_uf: z.coerce.string().length(2, 'UF deve ter 2 caracteres')
+    .transform(uf => uf.toUpperCase())
+    .refine(
+      (uf) => Object.values(States).includes(uf as States),
+      'UF não existe'
+    ),
 
   /**
    * medication: obrigatório
@@ -76,12 +78,10 @@ export const PrescriptionSchema = z.object({
   /**
    * controlled: boolean (quando vazio considerar false) e obrigatório
    */
-  controlled: z.union([z.boolean(), z.string()]).transform((val) => {
-    if (typeof val === 'string') {
-      return val.toLowerCase() === 'true';
-    }
+  controlled: z.string().transform((controlled) => {
+    const lowerVal = controlled.toLowerCase().trim();
 
-    return val;
+    return lowerVal === 'true' || lowerVal === 'sim' || lowerVal === '1';
   }),
 
   /**
@@ -97,7 +97,9 @@ export const PrescriptionSchema = z.object({
   /**
    * duration: duração máxima de 90 dias e obrigatório
    */
-  duration: z.coerce.number().positive('Duração deve ser um número positivo').refine(
+  duration: z.coerce.number().positive('Duração deve ser um número positivo')
+  .min(1, 'Duração é obrigatório')
+  .refine(
     (duration) => {
       return duration <= 90;
     },
@@ -131,8 +133,8 @@ export const PrescriptionSchema = z.object({
 
     return true;
   }, {
-    message: 'Remédios controlados tem frequência máxima de 60 dias',
-    path: ['frequency'],
+    message: 'Remédios controlados tem duração máxima de 60 dias',
+    path: ['duration'],
   }
 );
 
