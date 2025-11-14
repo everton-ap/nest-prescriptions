@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PrescriptionsModule } from './prescriptions/prescriptions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Prescription } from './prescriptions/entities/prescription.entity';
@@ -22,8 +20,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
     PrescriptionsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 
 export class AppModule {}
