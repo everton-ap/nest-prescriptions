@@ -18,7 +18,7 @@ import { ConfigModule } from '@nestjs/config';
       database: process.env.DB_NAME || 'prescriptions',
       entities: [Prescription],
       synchronize: true,
-      logging: true,
+      // logging: true,
     }),
     PrescriptionsModule,
   ],
