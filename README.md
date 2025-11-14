@@ -114,3 +114,20 @@ docker compose down -v
 # Recriar containers
 docker compose up -d --force-recreate
 ```
+
+## Testes
+
+### Cenários de Teste
+
+A aplicação deve ser testada nos seguintes cenários:
+
+- [ ] CSV corrompido
+- [ ] CSV com cabeçalhos inválidos
+- [ ] CSV com CPF inválido
+- [ ] CSV com data de nascimento em formato incorreto
+- [ ] CSV com campos obrigatórios faltando
+- [ ] CSV com prescrições duplicadas
+- [ ] CSV válido com importação bem-sucedida
+- [ ] Busca de prescrição por ID existente
+- [ ] Busca de prescrição por ID inexistente
+- [ ] Upload sem arquivo anexado
