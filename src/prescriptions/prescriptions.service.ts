@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { parse } from 'csv-parse/sync';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Prescription } from './entities/prescription.entity';
@@ -97,6 +97,25 @@ export class PrescriptionsService {
       valid_records: validRecords,
       errors: errors,
     };
+  }
+
+  /**
+   * Busca uma Prescription no repositorio pelo ID
+   * 
+   * @param id da prescricao
+   * @returns Prescription
+   * @throws NotFoundException caso nao encontre
+   */
+  async getPrescriptionById(id: string): Promise<Prescription> {
+    const prescription = await this.prescriptionRepository.findOne({
+      where: { id }
+    });
+
+    if (prescription === null) {
+      throw new NotFoundException('Prescrição não encontrada');
+    }
+
+    return prescription;
   }
 
   /**
