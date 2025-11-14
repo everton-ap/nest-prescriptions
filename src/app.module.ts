@@ -3,6 +3,7 @@ import { PrescriptionsModule } from './prescriptions/prescriptions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Prescription } from './prescriptions/entities/prescription.entity';
 import { ConfigModule } from '@nestjs/config';
+import { FailedRecord } from './prescriptions/entities/failed-record.entity';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { ConfigModule } from '@nestjs/config';
       username: process.env.DB_USER || 'nest',
       password: process.env.DB_PASS || 'senha',
       database: process.env.DB_NAME || 'prescriptions',
-      entities: [Prescription],
+      entities: [Prescription, FailedRecord],
       synchronize: true,
       // logging: true,
     }),

@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { parse } from 'csv-parse/sync';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Prescription } from './entities/prescription.entity';
+import { FailedRecord } from './entities/failed-record.entity';
 import { Repository } from 'typeorm';
 import { PrescriptionSchema } from './schemas/prescription.schema';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,7 +30,9 @@ type UploadError = {
 export class PrescriptionsService {
   constructor(
     @InjectRepository(Prescription)
-    private readonly prescriptionRepository: Repository<Prescription>
+    private readonly prescriptionRepository: Repository<Prescription>,
+    @InjectRepository(FailedRecord)
+    private readonly failedRecordRepository: Repository<FailedRecord>
   ) {}
 
   async create(prescriptionCsvData: string): Promise<UploadResponse> {
@@ -60,16 +63,30 @@ export class PrescriptionsService {
       const validatedRecord = PrescriptionSchema.safeParse(record);
 
       if (!validatedRecord.success) {
-        validatedRecord.error.issues.forEach((err) => {
+        validatedRecord.error.issues.forEach(async (err) => {
           const fieldName = err.path[0];
+          const errorValue = fieldName && typeof fieldName === 'string' ? record[fieldName] : record;
 
-          // TODO criar entitade para registrar erros e ter os logs das tentativas, adicionar o uuid do processo
-          errors.push({
+          const uploadError = {
             line: i + 2, // +2 pelo index começar em 0 e o cabeçalho ser considerado a primeira
             field: err.path.join('.'),
             message: err.message,
-            value: fieldName && typeof fieldName === 'string' ? record[fieldName] : record,
+            value: errorValue,
+          };
+
+          errors.push(uploadError);
+
+          // Salva o erro no banco de dados para auditoria 
+          // mas poderia ser no opentelemetry ou algum outro tipo de telemetria utilizada
+          const failedRecord = this.failedRecordRepository.create({
+            upload_id: uploadId,
+            line: uploadError.line,
+            field: uploadError.field,
+            message: uploadError.message,
+            value: JSON.stringify(errorValue),
           });
+
+          await this.failedRecordRepository.save(failedRecord);
         });
 
         continue;
@@ -78,12 +95,24 @@ export class PrescriptionsService {
       const prescriptionExists = await this.checkIfIdAlreadExists(validatedRecord.data.id);
 
       if (prescriptionExists) {
-        errors.push({
+        const uploadError = {
           line: i + 2,
           field: 'id',
           message: `ID já registrado no banco`,
           value: validatedRecord.data.id,
+        };
+
+        errors.push(uploadError);
+
+        const failedRecord = this.failedRecordRepository.create({
+          upload_id: uploadId,
+          line: uploadError.line,
+          field: uploadError.field,
+          message: uploadError.message,
+          value: JSON.stringify(uploadError.value),
         });
+
+        await this.failedRecordRepository.save(failedRecord);
       } else {
         const prescription = this.prescriptionRepository.create(validatedRecord.data);
         await this.prescriptionRepository.save(prescription);
