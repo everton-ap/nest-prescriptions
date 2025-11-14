@@ -119,15 +119,40 @@ docker compose up -d --force-recreate
 
 ### Cenários de Teste
 
-A aplicação deve ser testada nos seguintes cenários:
+A aplicação foi testada nos seguintes cenários:
 
-- [ ] CSV corrompido
-- [ ] CSV com cabeçalhos inválidos
-- [ ] CSV com CPF inválido
-- [ ] CSV com data de nascimento em formato incorreto
-- [ ] CSV com campos obrigatórios faltando
-- [ ] CSV com prescrições duplicadas
-- [ ] CSV válido com importação bem-sucedida
-- [ ] Busca de prescrição por ID existente
-- [ ] Busca de prescrição por ID inexistente
-- [ ] Upload sem arquivo anexado
+1. Não criar registro
+- [x] Registro sem ID
+- [x] Registro com ID já existente no banco
+- [x] Registro sem Data
+- [x] Registro com Data com formato inválido
+- [x] Registro sem CPF
+- [x] Registro com CPF com menos de 11 dígitos
+- [x] Registro com CPF com mais de 11 dígitos
+- [x] Registro sem CRM
+- [x] Registro com CRM não numérico
+- [x] Registro com CRM numérico negativo
+- [x] Registro sem UF
+- [x] Registro com UF inválido
+- [x] Registro sem Medicamento
+- [x] Registro sem Dosagem
+- [x] Registro sem Duração
+- [x] Registro com Duração negativa
+- [x] Registro com Controlado e sem Observação
+- [x] CSV vazio
+- [x] CSV com cabeçalho e sem registros
+- [x] CSV com cabeçalho e com linhas vazias
+- [x] CSV com cabeçalho faltando campo(s)
+- [x] CSV com linha faltando campos
+- [x] CSV com linha com mais campos do que o cabeçalho
+- [x] CSV corrompido
+- [x] Upload sem arquivo anexado
+
+2. Criar registro
+- [x] Registro com UF não importando case sensitive
+- [x] Registro não Controlado e sem Observação
+- [x] Ignorar as linhas vazias
+
+3. Endpoint de busca
+- [x] Busca de prescrição por ID existente
+- [x] Busca de prescrição por ID inexistente

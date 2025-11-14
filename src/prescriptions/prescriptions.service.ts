@@ -151,7 +151,7 @@ export class PrescriptionsService {
     const missingFields = PRESCRIPTION_REQUIRED_FIELDS.filter(field => !csvFields.includes(field));
 
     if (missingFields.length > 0) {
-      throw new BadRequestException(`Campos obrigatórios ausentes no CSV: ${missingFields.join(', ')}`);
+      throw new BadRequestException(`Campos obrigatórios ausentes no cabeçalho: ${missingFields.join(', ')}`);
     }
 
     return csvRecords;
