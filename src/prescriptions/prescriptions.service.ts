@@ -62,6 +62,8 @@ export class PrescriptionsService {
       if (!validatedRecord.success) {
         validatedRecord.error.issues.forEach((err) => {
           const fieldName = err.path[0];
+
+          // TODO criar entitade para registrar erros e ter os logs das tentativas, adicionar o uuid do processo
           errors.push({
             line: i + 2, // +2 pelo index começar em 0 e o cabeçalho ser considerado a primeira
             field: err.path.join('.'),
