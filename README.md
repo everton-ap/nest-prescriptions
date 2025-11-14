@@ -33,7 +33,7 @@ docker compose up -d
 docker ps
 ```
 
-O banco de dados estará disponível em `localhost:3307` (porta configurável via `.env`).
+O banco de dados estará disponível em `localhost:3306` (porta configurável via `.env`).
 
 **Comandos úteis do Docker:**
 
