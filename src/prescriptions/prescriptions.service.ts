@@ -36,39 +36,41 @@ export class PrescriptionsService {
   ) {}
 
   async create(prescriptionCsvData: string): Promise<UploadResponse> {
-    // Lib para geração de uuid
     const uploadId = uuidv4();
-
-    let status: StatusType = 'processing';
     let csvRecords: Record<string, any>[];
 
     try {
       csvRecords = this.parseCsvRecords(prescriptionCsvData);
     } catch (error) {
-      status = 'failed';
-
       throw error;
     }
 
-    let errors: UploadError[] = [];
-    let validRecords: number = 0;
-    let processedRecords: number = 0;
+    // 1. Buscar TODOS os IDs existentes de uma vez (otimização de performance)
+    const idsToCheck = csvRecords.map(r => r.id).filter(Boolean);
+    const existingPrescriptions = await this.prescriptionRepository
+      .createQueryBuilder('p')
+      .select('p.id')
+      .where('p.id IN (:...ids)', { ids: idsToCheck })
+      .getMany();
 
-    // TODO para escabilidade
-    // só persistir no banco após intervalor de X registros
+    const existingIds = new Set(existingPrescriptions.map(p => p.id));
+
+    // 2. Processar registros e acumular em lotes
+    const validPrescriptions: any[] = [];
+    const failedRecords: any[] = [];
+    const errors: UploadError[] = [];
+
     for (let i = 0; i < csvRecords.length; i++) {
-      processedRecords++;
-
       const record = csvRecords[i];
       const validatedRecord = PrescriptionSchema.safeParse(record);
 
       if (!validatedRecord.success) {
-        validatedRecord.error.issues.forEach(async (err) => {
+        validatedRecord.error.issues.forEach((err) => {
           const fieldName = err.path[0];
           const errorValue = fieldName && typeof fieldName === 'string' ? record[fieldName] : record;
 
           const uploadError = {
-            line: i + 2, // +2 pelo index começar em 0 e o cabeçalho ser considerado a primeira
+            line: i + 2, // +2 pelo index começar em 0 e o cabeçalho ser considerado a primeira linha
             field: err.path.join('.'),
             message: err.message,
             value: errorValue,
@@ -76,25 +78,21 @@ export class PrescriptionsService {
 
           errors.push(uploadError);
 
-          // Salva o erro no banco de dados para auditoria 
-          // mas poderia ser no opentelemetry ou algum outro tipo de telemetria utilizada
-          const failedRecord = this.failedRecordRepository.create({
+          // Acumula erro para salvar em lote
+          failedRecords.push({
             upload_id: uploadId,
             line: uploadError.line,
             field: uploadError.field,
             message: uploadError.message,
             value: JSON.stringify(errorValue),
           });
-
-          await this.failedRecordRepository.save(failedRecord);
         });
 
         continue;
       }
 
-      const prescriptionExists = await this.checkIfIdAlreadExists(validatedRecord.data.id);
-
-      if (prescriptionExists) {
+      // Verificação em memória (O(1) vs O(n) query)
+      if (existingIds.has(validatedRecord.data.id)) {
         const uploadError = {
           line: i + 2,
           field: 'id',
@@ -104,30 +102,41 @@ export class PrescriptionsService {
 
         errors.push(uploadError);
 
-        const failedRecord = this.failedRecordRepository.create({
+        failedRecords.push({
           upload_id: uploadId,
           line: uploadError.line,
           field: uploadError.field,
           message: uploadError.message,
           value: JSON.stringify(uploadError.value),
         });
-
-        await this.failedRecordRepository.save(failedRecord);
       } else {
-        const prescription = this.prescriptionRepository.create(validatedRecord.data);
-        await this.prescriptionRepository.save(prescription);
-        validRecords++;
+        validPrescriptions.push(validatedRecord.data);
       }
-    };
+    }
 
-    status = 'completed';
+    // 3. Persistir em LOTE (bulk insert) - muito mais eficiente
+    if (failedRecords.length > 0) {
+      await this.failedRecordRepository
+        .createQueryBuilder()
+        .insert()
+        .values(failedRecords)
+        .execute();
+    }
+
+    if (validPrescriptions.length > 0) {
+      await this.prescriptionRepository
+        .createQueryBuilder()
+        .insert()
+        .values(validPrescriptions)
+        .execute();
+    }
 
     return {
       upload_id: uploadId,
-      status: status,
+      status: 'completed',
       total_records: csvRecords.length,
-      processed_records: processedRecords,
-      valid_records: validRecords,
+      processed_records: csvRecords.length,
+      valid_records: validPrescriptions.length,
       errors: errors,
     };
   }
@@ -186,21 +195,4 @@ export class PrescriptionsService {
     return csvRecords;
   }
 
-  /**
-   * Checa se já existe algum registro com esse ID no repositório
-   *
-   * @param prescriptionId id da prescricao
-   * @returns {boolean}
-   */
-  private async checkIfIdAlreadExists(prescriptionId: string): Promise<boolean> {
-    const prescription = await this.prescriptionRepository.findOne({
-      where: { id: prescriptionId }
-    });
-
-    if (prescription == null) {
-      return false;
-    }
-
-    return true;
-  }
 }

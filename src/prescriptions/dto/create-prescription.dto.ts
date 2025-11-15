@@ -1,7 +1,8 @@
 export class CreatePrescriptionDto {
   id: string;
   date: string;
-  patiente_cpf: string;
+  patient_cpf: string;
+  doctor_crm: number;
   doctor_uf: string;
   medication: string;
   controlled: boolean;
