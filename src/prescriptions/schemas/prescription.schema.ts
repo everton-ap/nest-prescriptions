@@ -15,17 +15,15 @@ export const PrescriptionSchema = z.object({
    * date: data válida e obrigatório
    * date: não pode ser futura
    */
-  date: z.string().min(1, 'Data é obrigatório').refine(
+  date: z.string().min(1, 'Data é obrigatório')
+  .refine(
     (date) => {
-      if (date.length === 10 && date.includes('-')) {
-        return new Date(date);
-      }
+      // Regex para validar formatos de datas aceitas
+      const formatDDMMYYYY = /^\d{2}\/\d{2}\/\d{4}$/;
+      const formatDDMMYY = /^\d{2}\/\d{2}\/\d{2}$/;
+      const formatISO = /^\d{4}-\d{2}-\d{2}$/;
 
-      if ((date.length >= 8 && date.length <= 10) && date.includes('/')) {
-        return new Date(date);
-      }
-
-      return false;
+      return formatDDMMYYYY.test(date) || formatDDMMYY.test(date) || formatISO.test(date);
     },
     'Data inválida, enviar em algum dos formatos dd/mm/aaaa, dd/mm/aa, aaaa-mm-dd'
   ).refine(
